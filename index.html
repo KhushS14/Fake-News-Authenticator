@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake News Detector</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header Styles */
+        header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        header .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 20px;
+        }
+
+        .logo h1 {
+            color: white;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        nav a:hover {
+            color: #ffd700;
+        }
+
+        .signup-btn {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .signup-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Main Content */
+        #home {
+            padding-top: 100px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .main-content h2 {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-content p {
+            font-size: 1.1rem;
+            color: #555;
+            margin-bottom: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .cta-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 1rem;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Model Section */
+        .model-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 3rem;
+            margin-top: 2rem;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .model-section.active {
+            display: block;
+        }
+
+        .input-group {
+            margin-bottom: 2rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        .input-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 120px;
+            font-family: inherit;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .analyze-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .analyze-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .analyze-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 15px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: none;
+        }
+
+        .result.fake {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+
+        .result.real {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .result.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 2rem;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header .container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .main-content {
+                padding: 2rem;
+                margin: 1rem;
+            }
+
+            .main-content h2 {
+                font-size: 2rem;
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>FakeNews Detector</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#about">About</a></li>
+                    <li><a href="#features">Features</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                    <li><button class="signup-btn" onclick="openModal()">Sign Up</button></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <section id="home">
+        <div class="container">
+            <div class="main-content">
+                <h2>Understanding Fake News</h2>
+                <p>Fake news refers to false or misleading information presented as news. It often aims to manipulate people's perceptions, spread misinformation, and cause harm.</p>
+                <p>Fake news is dangerous because it distorts reality, undermines trust in media and institutions, and can have serious social and political consequences.</p>
+                <button class="cta-btn" onclick="showModel()">Try Out Our Model</button>
+            </div>
+
+            <!-- Model Section -->
+            <div class="model-section" id="modelSection">
+                <h2 style="text-align: center; margin-bottom: 2rem; color: #2c3e50;">AI-Powered Fake News Detection</h2>
+                
+                <div class="input-group">
+                    <label for="newsText">Enter news article or headline to analyze:</label>
+                    <textarea id="newsText" placeholder="Paste your news article or headline here..."></textarea>
+                </div>
+
+                <button class="analyze-btn" id="analyzeBtn" onclick="analyzeNews()">
+                    <span id="btnText">Analyze News</span>
+                </button>
+
+                <div class="result" id="result"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div id="signupModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Sign Up for FakeNews Detector</h2>
+            <p>Join our community to get access to advanced features and stay updated with the latest in fake news detection technology.</p>
+            <form style="margin-top: 1rem;">
+                <input type="email" placeholder="Enter your email" style="width: 100%; padding: 0.8rem; margin: 0.5rem 0; border: 1px solid #ddd; border-radius: 5px;">
+                <button type="submit" style="width: 100%; padding: 0.8rem; background: #667eea; color: white; border: none; border-radius: 5px; margin-top: 1rem;">Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Fake news detection keywords and patterns
+        const fakeNewsIndicators = [
+            'you won\'t believe', 'shocking truth', 'doctors hate this', 'click here',
+            'breaking news', 'this will change everything', 'they don\'t want you to know',
+            'miracle cure', 'secret revealed', 'incredible discovery', 'urgent',
+            'scientists baffled', 'government hiding', 'conspiracy', 'cover-up'
+        ];
+
+        const reliableIndicators = [
+            'according to', 'research shows', 'study finds', 'data indicates',
+            'experts say', 'published in', 'peer-reviewed', 'university',
+            'institute', 'official statement', 'confirmed by', 'verified'
+        ];
+
+        function analyzeNews() {
+            const newsText = document.getElementById('newsText').value.trim();
+            const analyzeBtn = document.getElementById('analyzeBtn');
+            const btnText = document.getElementById('btnText');
+            const result = document.getElementById('result');
+
+            if (!newsText) {
+                alert('Please enter some text to analyze!');
+                return;
+            }
+
+            // Show loading state
+            analyzeBtn.disabled = true;
+            btnText.innerHTML = '<span class="loading"></span>Analyzing...';
+            result.classList.remove('show');
+
+            // Simulate AI processing delay
+            setTimeout(() => {
+                const analysis = performAnalysis(newsText);
+                displayResult(analysis);
+                
+                // Reset button
+                analyzeBtn.disabled = false;
+                btnText.textContent = 'Analyze News';
+            }, 2000);
+        }
+
+        function performAnalysis(text) {
+            const lowerText = text.toLowerCase();
+            let fakeScore = 0;
+            let realScore = 0;
+
+            // Check for fake news indicators
+            fakeNewsIndicators.forEach(indicator => {
+                if (lowerText.includes(indicator)) {
+                    fakeScore += 2;
+                }
+            });
+
+            // Check for reliable indicators
+            reliableIndicators.forEach(indicator => {
+                if (lowerText.includes(indicator)) {
+                    realScore += 2;
+                }
+            });
+
+            // Additional analysis factors
+            const hasNumbers = /\d+/.test(text);
+            const hasQuotes = text.includes('"') || text.includes("'");
+            const wordCount = text.split(' ').length;
+            const hasExclamation = (text.match(/!/g) || []).length;
+            const hasCapitals = (text.match(/[A-Z]/g) || []).length;
+
+            if (hasNumbers) realScore += 1;
+            if (hasQuotes) realScore += 1;
+            if (wordCount > 50) realScore += 1;
+            if (hasExclamation > 3) fakeScore += 2;
+            if (hasCapitals > text.length * 0.1) fakeScore += 1;
+
+            // Calculate confidence
+            const totalScore = fakeScore + realScore;
+            const confidence = totalScore > 0 ? Math.max(fakeScore, realScore) / totalScore * 100 : 50;
+
+            return {
+                isFake: fakeScore > realScore,
+                confidence: Math.min(confidence, 95),
+                fakeScore,
+                realScore
+            };
+        }
+
+        function displayResult(analysis) {
+            const result = document.getElementById('result');
+            const isFake = analysis.isFake;
+            const confidence = Math.round(analysis.confidence);
+
+            result.className = `result ${isFake ? 'fake' : 'real'}`;
+            result.innerHTML = `
+                <h3>${isFake ? '🚨 Likely FAKE NEWS' : '✅ Likely REAL NEWS'}</h3>
+                <p>Confidence: ${confidence}%</p>
+                <p style="font-size: 0.9rem; margin-top: 1rem; opacity: 0.8;">
+                    ${isFake ? 
+                        'This content shows characteristics commonly found in fake news. Please verify with reliable sources.' : 
+                        'This content appears to follow journalistic standards and reliable reporting practices.'
+                    }
+                </p>
+            `;
+            result.classList.add('show');
+        }
+
+        function showModel() {
+            document.getElementById('modelSection').classList.add('active');
+            document.getElementById('modelSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function openModal() {
+            document.getElementById('signupModal').style.display = 'block';
+        }
+
+        // Modal functionality
+        window.onclick = function(event) {
+            const modal = document.getElementById('signupModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        document.querySelector('.close').onclick = function() {
+            document.getElementById('signupModal').style.display = 'none';
+        }
+
+        // Handle form submission
+        document.querySelector('form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('Thank you for signing up! You\'ll receive updates about our fake news detection technology.');
+            document.getElementById('signupModal').style.display = 'none';
+        });
+
+        // Allow Enter key to analyze
+        document.getElementById('newsText').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                analyzeNews();
+            }
+        });
+    </script>
+</body>
+</html>
